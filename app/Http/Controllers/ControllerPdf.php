@@ -29,7 +29,7 @@ class ControllerPdf extends Controller
         $result = $request->file('documento')->storeOnCloudinary('laravel');
         Document::create([
             'nombre' =>  $request->nombre,
-            'tiempo' => 0,
+            'tiempo' => '00:00:00',
             'context' => '',
             'state' => false,
             'activo' => true,
