@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ControllerPdf;
 use App\Http\Controllers\HttpController;
+use App\Http\Controllers\UploadController;
 use App\Livewire\Document;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
@@ -37,4 +38,10 @@ Route::get('convertio', HttpController::class);
 Route::get('/upload', function () {
     return view('upload');
 });
+
 Route::post('/subir',[ControllerPdf::class, 'upload'])->name('subir');
+
+
+Route::post('/audio/upload',[UploadController::class,'uploadAudio']);
+
+Route::delete('/audio/upload',[UploadController::class,'deleteAudio']);

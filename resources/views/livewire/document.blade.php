@@ -4,24 +4,16 @@
         <div class="mt-6 mb-4">
             <input type="text" wire:model.live="search" placeholder="Buscar..."
                 class="px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        </div>
-
-        <!-- Botón de subir -->
-        <div class="mt-6 mb-4">
-            <a class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                href="{{ url('upload') }}">
-                Subir
-            </a>
-        </div>
+        </div>    
     </div>
 
     <div class="mt-6">
-        <div class="mt-2">
+        <div class="mt-2 overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                             Tiempo
                         </th>
                         <th scope="col"
@@ -34,13 +26,14 @@
                         </th>
                         <th scope="col"
                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Acciones</th>
+                            Acciones
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach ($documents as $item)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->tiempo }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">{{ $item->tiempo }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->nombre }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @if (!$item->state)
@@ -49,16 +42,16 @@
                                     <span class="bg-green-100 text-green-500 px-2 py-1 rounded">Procesado</span>
                                 @endif
                             </td>
-
+    
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 @if ($item->state)
                                     <a class="text-indigo-500 hover:text-indigo-500 bg-indigo-100 hover:bg-indigo-300 p-1 rounded"
-                                        href="{{ route('pdf.show', $item->id) }}" target="_blank"> pdf</a>
+                                        href="{{ route('pdf.show', $item->id) }}" target="_blank">pdf</a>
                                 @endif
-
+    
                                 <button wire:click='confirModal({{ $item->id }})'
                                     class="text-red-500 hover:text-red-500 bg-red-100 hover:bg-red-300 p-1 rounded">Eliminar</button>
-
+    
                                 @if (!$item->state)
                                     <button wire:click='procesar({{ $item->id }})'
                                         class="text-blue-500 hover:text-blue-500 bg-blue-100 hover:bg-blue-300 p-1 rounded">
@@ -67,7 +60,7 @@
                                         <span wire:loading wire:target='procesar({{ $item->id }})'>Loading...</span>
                                     </button>
                                 @endif
-
+    
                             </td>
                         </tr>
                     @endforeach
@@ -80,7 +73,7 @@
             {{ $documents->links() }}
         </div>
     </div>
-
+    
     <x-confirmation-modal wire:model="confirmingUserDeletion">
         <x-slot name="title">
             Desea eliminar el Documento

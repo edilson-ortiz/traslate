@@ -6,51 +6,84 @@ use App\Livewire\Document as LivewireDocument;
 use App\Models\Document;
 use App\Services\Convertio;
 use App\Services\Upload;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Auth;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 class UploadAdioForm extends Component
 {
-    use WithFileUploads;
     use LivewireAlert;
-    public $name, $audio;
+    public $name, $dataAudio;
+
+    protected $rules = [
+        'dataAudio' => 'required',
+    ];
+
+    protected $messages = [
+        'dataAudio.required' => 'Por favor, seleccione un archivo de audio para continuar.',
+    ];
+
+    protected $listeners = ['urlName'];
+
+    public function urlName($url)
+    {
+        if ($url == null) {
+            Upload::delete($this->dataAudio['public_id']);
+        } else {
+            $this->dataAudio = json_decode($url, true);
+        }
+    }
 
     public function save()
     {
-        $this->name;
-        $this->audio;    
-        $url = Upload::upload($this->audio);
+
+        $this->validate();
         
-        dd(url($url));
-        
+        $url = $this->dataAudio['secure_url'];
+        try {
+            $response = Convertio::Upload($url);
+            $context = $response['transcript'];
+            $tiempo = $this->formatBySegundo($response['duration']);
 
-        $data = Convertio::Upload($url);
-
-        Document::create([
-            'nombre' => $this->name,
-            //'tiempo' => $this->formatBySegundo($data['duration']),
-            'tiempo' => $this->formatBySegundo(100),
-            'context' => 'hi',
-            'state' => true,
-            'activo' => true,
-            'user_id' => Auth::user()->id,
-        ]);
-
-        $this->clear();
-        $this->dispatch('update-document')->to(LivewireDocument::class);
-
-        $this->alert('success', 'Procesando Correctamente!', [
-            'position' => 'top-end',
-            'timer' => 3000,
-            'toast' => true,
-        ]);
+            Document::create([
+                'nombre' =>  $this->dataAudio['public_id'],
+                'tiempo' => $tiempo,
+                'context' => $context,
+                'state' => true,
+                'activo' => true,
+                'user_id' => Auth::user()->id,
+                'url' => $url
+            ]);
+            $this->clear();
+            $this->dispatch('update-document')->to(LivewireDocument::class);
+            $this->alert('success', 'Procesando Correctamente!', [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]);
+        } catch (\Throwable $th) {
+            Document::create([
+                'nombre' =>  $this->dataAudio['public_id'],
+                'tiempo' => "00:00:00",
+                'context' => "Error",
+                'state' => false,
+                'activo' => true,
+                'user_id' => Auth::user()->id,
+                'url' => $url
+            ]);
+            $this->alert('error', 'Error al procesar!', [
+                'position' => 'top-end',
+                'timer' => 3000,
+                'toast' => true,
+            ]);
+        }
+        $this->dispatch('post-created'); 
     }
     public function clear()
     {
         $this->name = null;
-        $this->audio = null;
+        $this->dataAudio = null;
     }
 
     public function formatBySegundo($seg)
